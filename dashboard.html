@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Student Dashboard | CampusConnect 360</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #1e293b;
+    }
+
+    .dashboard-page {
+      max-width: 1200px;
+      margin: auto;
+      padding: 35px 20px 55px;
+      min-height: 65vh;
+    }
+
+    .dashboard-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .dashboard-heading h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .dashboard-heading p {
+      margin: 0;
+      color: #64748b;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      display: inline-block;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .download-btn {
+  display: inline-block;
+  background: #15803d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.download-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pay-btn {
+  display: inline-block;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.pay-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+    .primary-btn {
+      background: #2563eb;
+      color: white;
+    }
+
+    .secondary-btn {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+      border: 1px solid #e8edf4;
+    }
+
+    .stat-card p {
+      margin: 0 0 12px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .stat-card h2 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .applications-section {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+      border: 1px solid #e8edf4;
+      margin-bottom: 25px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .application-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .application-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      background: #fff;
+    }
+
+    .application-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .application-top h3 {
+      margin: 0 0 7px;
+      font-size: 19px;
+    }
+
+    .application-id {
+      color: #64748b;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .status-badge,
+    .payment-badge {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      color: #92400e;
+      background: #fef3c7;
+    }
+
+    .status-approved {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .status-rejected {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .status-completed {
+      color: #1d4ed8;
+      background: #dbeafe;
+    }
+
+    .status-other {
+      color: #475569;
+      background: #e2e8f0;
+    }
+
+    .payment-paid {
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .payment-unpaid {
+      color: #92400e;
+      background: #fef3c7;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .detail-item {
+      min-width: 0;
+    }
+
+    .detail-label {
+      display: block;
+      color: #64748b;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .detail-value {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .application-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 20px;
+      padding-top: 15px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 45px 15px;
+      color: #64748b;
+    }
+
+    .empty-state h3 {
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+    }
+
+    .dashboard-message {
+      margin-bottom: 18px;
+      padding: 12px 15px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .dashboard-message[hidden],
+    .empty-state[hidden] {
+      display: none;
+    }
+
+    #lookupForm {
+      display: grid;
+      gap: 10px;
+      max-width: 450px;
+      margin-top: 18px;
+    }
+
+    #lookupForm input {
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #lookupForm label {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    #lookupForm button:disabled,
+    .secondary-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 850px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .details-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .dashboard-page {
+        padding: 25px 12px 40px;
+      }
+
+      .dashboard-heading h1 {
+        font-size: 25px;
+      }
+
+      .stats-grid,
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .applications-section {
+        padding: 16px;
+      }
+
+      .application-card {
+        padding: 15px;
+      }
+
+      .stat-card {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="brand">CampusConnect 360</div>
+
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="apply.html">Apply for Service</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="dashboard-page">
+
+    <div class="dashboard-heading">
+      <div>
+        <h1>Student Dashboard</h1>
+        <p>View and track your college service applications.</p>
+      </div>
+
+      <a href="apply.html" class="primary-btn">
+        + Apply for a Service
+      </a>
+    </div>
+
+    <div id="dashboardMessage" class="dashboard-message" hidden></div>
+
+    <!-- STUDENT PROFILE SECTION -->
+
+<section class="applications-section">
+
+  <div class="section-heading">
+    <h2>Welcome, <span id="studentName">Student</span>!</h2>
+    <p>Your Student Dashboard</p>
+  </div>
+
+  <div class="student-profile">
+    <p>
+      <strong>USN:</strong>
+      <span id="studentUSN">Loading...</span>
+    </p>
+  </div>
+
+  <button
+    type="button"
+    class="primary-btn"
+    id="profileRefreshButton"
+  >
+    Refresh Applications
+  </button>
+
+  <button
+    type="button"
+    class="primary-btn"
+    id="logoutButton"
+  >
+    Logout
+  </button>
+
+</section>
+    <!-- APPLICATION STATISTICS -->
+
+    <section class="stats-grid" aria-label="Application statistics">
+
+      <div class="stat-card">
+        <p>Total Applications</p>
+        <h2 id="totalCount">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Pending</p>
+        <h2 id="pendingCount">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Approved</p>
+        <h2 id="approvedCount">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Rejected</p>
+        <h2 id="rejectedCount">0</h2>
+      </div>
+
+    </section>
+
+    <!-- APPLICATION LIST -->
+
+    <section class="applications-section">
+
+      <div class="section-heading">
+        <h2>My Applications</h2>
+
+        <button
+          id="refreshButton"
+          class="secondary-btn"
+          type="button"
+          disabled
+        >
+          Refresh
+        </button>
+      </div>
+
+      <div id="applicationList" class="application-list"></div>
+
+      <div id="emptyState" class="empty-state" hidden>
+        <h3>No Applications Found</h3>
+
+        <p>
+          No service requests were found for the entered USN and email.
+        </p>
+
+        <a href="apply.html" class="primary-btn">Apply Now</a>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <p>© 2026 CampusConnect 360. All rights reserved.</p>
+  </footer>
+
+  <script>
+
+    // =====================================
+    // API CONFIGURATION
+    // =====================================
+
+    const API_URL = "http://localhost:5000";
+
+    const applicationList =
+      document.getElementById("applicationList");
+
+    const emptyState =
+      document.getElementById("emptyState");
+
+    const dashboardMessage =
+      document.getElementById("dashboardMessage");
+
+    const lookupForm =
+      document.getElementById("lookupForm");
+
+    const lookupButton =
+      document.getElementById("lookupButton");
+
+    const refreshButton =
+      document.getElementById("refreshButton");
+
+    const subjectCountServices = [
+      "Backlog / Supplementary Exam",
+      "Revaluation Application",
+      "Answer Script Photocopy"
+    ];
+
+    let studentApplications = [];
+
+    let lastStudentUSN = "";
+    let lastStudentEmail = "";
+
+    // =====================================
+    // MESSAGE FUNCTION
+    // =====================================
+
+    function showMessage(message) {
+      dashboardMessage.textContent = message;
+      dashboardMessage.hidden = false;
+    }
+
+    // =====================================
+    // STATUS FUNCTIONS
+    // =====================================
+
+    function normalizeStatus(status) {
+      return String(status || "pending")
+        .trim()
+        .toLowerCase();
+    }
+
+    function getStatusClass(status) {
+
+      const value = normalizeStatus(status);
+
+      if (value === "pending") return "status-pending";
+
+      if (value === "approved") return "status-approved";
+
+      if (value === "rejected") return "status-rejected";
+
+      if (value === "completed") return "status-completed";
+
+      return "status-other";
+    }
+
+    // =====================================
+    // CREATE APPLICATION DETAILS
+    // =====================================
+
+    function createDetail(label, value) {
+
+      const wrapper = document.createElement("div");
+
+      wrapper.className = "detail-item";
+
+      const labelElement = document.createElement("span");
+
+      labelElement.className = "detail-label";
+
+      labelElement.textContent = label;
+
+      const valueElement = document.createElement("span");
+
+      valueElement.className = "detail-value";
+
+      valueElement.textContent =
+        value === null ||
+        value === undefined ||
+        value === ""
+          ? "Not provided"
+          : String(value);
+
+      wrapper.append(labelElement, valueElement);
+
+      return wrapper;
+    }
+
+    // =====================================
+    // DATE FORMAT
+    // =====================================
+
+    function formatDate(value) {
+
+      if (!value) return "Not available";
+
+      const date = new Date(value);
+
+      return Number.isNaN(date.getTime())
+        ? String(value)
+        : date.toLocaleString();
+    }
+
+    // =====================================
+    // CREATE APPLICATION CARD
+    // =====================================
+// =====================================
+// DOWNLOAD STUDENT PDF SLIP
+// =====================================
+async function downloadStudentSlip(applicationId, button) {
+  button.disabled = true;
+  button.textContent = "Downloading...";
+
+  try {
+    const token = sessionStorage.getItem("studentToken");
+
+    if (!token) {
+      throw new Error("Please login again to download your slip.");
+    }
+
+    const response = await fetch(
+      `${API_URL}/api/student/applications/${encodeURIComponent(applicationId)}/slip`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      let result = {};
+
+      try {
+        result = await response.json();
+      } catch (error) {
+        // Ignore non-JSON error response
+      }
+
+      throw new Error(result.message || "PDF download failed.");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `CampusConnect_Slip_${applicationId}.pdf`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+
+    showMessage("Your PDF slip has been downloaded successfully!");
+
+  } catch (error) {
+    showMessage(error.message || "Could not download PDF.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Download PDF";
+  }
+}
+    // =====================================
+    // RAZORPAY CHECKOUT + PAYMENT VERIFICATION
+    // =====================================
+    let razorpayScriptPromise = null;
+
+    function loadRazorpayScript() {
+      if (window.Razorpay) return Promise.resolve(true);
+      if (!razorpayScriptPromise) {
+        razorpayScriptPromise = new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.head.appendChild(script);
+        });
+      }
+      return razorpayScriptPromise;
+    }
+
+    async function payApplication(application, button) {
+      const token = sessionStorage.getItem("studentToken");
+      if (!token) {
+        window.location.replace("student-login.html");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Opening payment...";
+      dashboardMessage.hidden = true;
+
+      try {
+        const loaded = await loadRazorpayScript();
+        if (!loaded || !window.Razorpay) {
+          throw new Error("Razorpay checkout could not load. Check your internet connection.");
+        }
+
+        const orderResponse = await fetch(`${API_URL}/api/payment/create-order`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ application_id: application.id })
+        });
+        const orderData = await orderResponse.json();
+        if (!orderResponse.ok || !orderData.success || !orderData.order) {
+          throw new Error(orderData.message || "Could not create payment order.");
+        }
+
+        const order = orderData.order;
+        if (!order.key_id || !order.id || !order.amount) {
+          throw new Error("Payment order details are incomplete. Check Razorpay configuration.");
+        }
+
+        const checkout = new window.Razorpay({
+          key: order.key_id,
+          amount: order.amount,
+          currency: order.currency || "INR",
+          name: "CampusConnect 360",
+          description: `Payment for ${application.service_name || "college service"}`,
+          order_id: order.id,
+          theme: { color: "#2563eb" },
+          handler: async function (paymentResponse) {
+            button.textContent = "Verifying payment...";
+            try {
+              const verifyResponse = await fetch(`${API_URL}/api/payment/verify`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  application_id: application.id,
+                  razorpay_order_id: paymentResponse.razorpay_order_id,
+                  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                  razorpay_signature: paymentResponse.razorpay_signature
+                })
+              });
+              const verifyData = await verifyResponse.json();
+              if (!verifyResponse.ok || !verifyData.success) {
+                throw new Error(verifyData.message || "Payment verification failed.");
+              }
+              showMessage("Payment verified successfully! Refreshing your applications...");
+              await loadApplications();
+            } catch (error) {
+              showMessage(`${error.message} If money was deducted, do not pay again; contact the administrator with your Application ID.`);
+            } finally {
+              button.disabled = false;
+              button.textContent = "Pay Now";
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              button.disabled = false;
+              button.textContent = "Pay Now";
+              showMessage("Payment window closed. Your application is still pending payment.");
+            }
+          }
+        });
+
+        checkout.on("payment.failed", function (response) {
+          button.disabled = false;
+          button.textContent = "Pay Now";
+          showMessage(response?.error?.description || "Payment failed. Please try again.");
+        });
+        checkout.open();
+      } catch (error) {
+        showMessage(error.message || "Could not start payment.");
+        button.disabled = false;
+        button.textContent = "Pay Now";
+      }
+    }
+
+    function createApplicationCard(application) {
+
+      const card = document.createElement("article");
+
+      card.className = "application-card";
+
+      const top = document.createElement("div");
+
+      top.className = "application-top";
+
+      const heading = document.createElement("div");
+
+      const title = document.createElement("h3");
+
+      title.textContent =
+        application.service_name || "College Service";
+
+      const id = document.createElement("div");
+
+      id.className = "application-id";
+
+      id.textContent =
+        "Application ID: " + application.id;
+
+      heading.append(title, id);
+
+      const status = document.createElement("span");
+
+      status.className =
+        "status-badge " +
+        getStatusClass(application.application_status);
+
+      status.textContent =
+        application.application_status || "Pending";
+
+      top.append(heading, status);
+
+      const details = document.createElement("div");
+
+      details.className = "details-grid";
+
+      details.append(
+        createDetail("Student Name", application.student_name),
+        createDetail("USN", application.student_usn),
+        createDetail("Department", application.department),
+        createDetail("Semester", application.semester),
+        createDetail("Quantity", application.quantity),
+        createDetail("Reason", application.reason),
+        createDetail(
+          "Fee",
+          "₹" + Number(application.fee || 0).toFixed(2)
+        ),
+        createDetail("Slip ID", application.slip_id)
+      );
+
+      if (
+        subjectCountServices.includes(application.service_name) &&
+        application.subject_count
+      ) {
+
+        details.append(
+          createDetail(
+            "Number of Subject to be Apply",
+            application.subject_count
+          )
+        );
+
+      }
+
+      const footer = document.createElement("div");
+
+      footer.className = "application-footer";
+
+      const submitted = document.createElement("span");
+
+      submitted.className = "application-id";
+
+      submitted.textContent =
+        "Submitted: " + formatDate(application.created_at);
+
+      const payment = document.createElement("span");
+
+      const paymentStatus =
+        String(application.payment_status || "pending");
+
+      payment.className =
+        "payment-badge " +
+        (
+          paymentStatus.toLowerCase() === "paid"
+            ? "payment-paid"
+            : "payment-unpaid"
+        );
+
+      payment.textContent =
+        "Payment: " + paymentStatus;
+
+      footer.append(submitted, payment);
+
+card.append(top, details, footer);
+
+// Show PDF button only after payment and approval
+if (
+  normalizeStatus(application.payment_status) === "paid" &&
+  normalizeStatus(application.application_status) === "approved" &&
+  application.slip_id
+) {
+  const downloadButton = document.createElement("button");
+
+  downloadButton.type = "button";
+  downloadButton.className = "download-btn";
+  downloadButton.textContent = "Download PDF";
+
+  downloadButton.addEventListener("click", () => {
+    downloadStudentSlip(application.id, downloadButton);
+  });
+
+  const downloadContainer = document.createElement("div");
+  downloadContainer.style.marginTop = "15px";
+  downloadContainer.appendChild(downloadButton);
+
+  card.appendChild(downloadContainer);
+}
+
+// Show Pay Now only for unpaid applications awaiting admin approval.
+if (
+  normalizeStatus(application.payment_status) !== "paid" &&
+  normalizeStatus(application.application_status) === "pending"
+) {
+  const payButton = document.createElement("button");
+  payButton.type = "button";
+  payButton.className = "pay-btn";
+  payButton.textContent = "Pay Now";
+  payButton.addEventListener("click", () => payApplication(application, payButton));
+
+  const payContainer = document.createElement("div");
+  payContainer.style.marginTop = "15px";
+  payContainer.appendChild(payButton);
+  card.appendChild(payContainer);
+}
+
+return card;
+    }
+
+    // =====================================
+    // RENDER DASHBOARD
+    // =====================================
+
+    function renderDashboard() {
+
+      const applications = studentApplications;
+
+      document.getElementById("totalCount").textContent =
+        applications.length;
+
+      document.getElementById("pendingCount").textContent =
+        applications.filter(
+          item =>
+            normalizeStatus(item.application_status) === "pending"
+        ).length;
+
+      document.getElementById("approvedCount").textContent =
+        applications.filter(
+          item =>
+            normalizeStatus(item.application_status) === "approved"
+        ).length;
+
+      document.getElementById("rejectedCount").textContent =
+        applications.filter(
+          item =>
+            normalizeStatus(item.application_status) === "rejected"
+        ).length;
+
+      applicationList.replaceChildren();
+
+      if (applications.length === 0) {
+
+        emptyState.hidden = false;
+
+        return;
+      }
+
+      emptyState.hidden = true;
+
+      applications.forEach(application => {
+
+        applicationList.appendChild(
+          createApplicationCard(application)
+        );
+
+      });
+    }
+// =====================================
+// FETCH APPLICATIONS FOR LOGGED-IN STUDENT
+// =====================================
+
+async function loadApplications() {
+
+  dashboardMessage.hidden = true;
+  refreshButton.disabled = true;
+  refreshButton.textContent = "Loading...";
+
+  try {
+
+    const token = sessionStorage.getItem("studentToken");
+
+    if (!token) {
+      window.location.replace("student-login.html");
+      return;
+    }
+
+    const response = await fetch(
+      `${API_URL}/api/student/applications`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("studentToken");
+      sessionStorage.removeItem("studentData");
+      window.location.replace("student-login.html");
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Could not fetch applications."
+      );
+    }
+
+    studentApplications = data.applications || [];
+
+    renderDashboard();
+
+    showMessage(
+      studentApplications.length === 0
+        ? "No applications found."
+        : "Your applications have been loaded successfully!"
+    );
+
+  } catch (error) {
+
+    console.error("Dashboard error:", error);
+
+    studentApplications = [];
+    renderDashboard();
+
+    showMessage(
+      error.message || "Could not connect to the server."
+    );
+
+  } finally {
+
+    refreshButton.disabled = false;
+    refreshButton.textContent = "Refresh Applications";
+
+  }
+}
+// =====================================
+// REFRESH APPLICATIONS
+// =====================================
+
+refreshButton.addEventListener("click", function() {
+  loadApplications();
+});
+const profileRefreshButton =
+  document.getElementById("profileRefreshButton");
+
+profileRefreshButton.addEventListener("click", function () {
+  loadApplications();
+});
+// =====================================
+// STUDENT LOGOUT
+// =====================================
+
+const logoutButton = document.getElementById("logoutButton");
+
+logoutButton.addEventListener("click", function() {
+
+  sessionStorage.removeItem("studentToken");
+  sessionStorage.removeItem("studentData");
+
+  window.location.replace("student-login.html");
+
+});
+
+// =====================================
+// AUTOMATIC DASHBOARD LOADING
+// =====================================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  const token = sessionStorage.getItem("studentToken");
+
+  if (!token) {
+    window.location.replace("student-login.html");
+    return;
+  }
+
+  try {
+    const studentData = JSON.parse(
+      sessionStorage.getItem("studentData") || "{}"
+    );
+
+    document.getElementById("studentName").textContent =
+      studentData.student_name || "Student";
+
+    document.getElementById("studentUSN").textContent =
+      studentData.student_usn || "Not available";
+
+    loadApplications();
+
+  } catch (error) {
+    console.error("Dashboard initialization error:", error);
+  }
+
+});
+  </script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusConnect 360 | Admin Dashboard</title>
+  <script>
+  const adminToken = sessionStorage.getItem("adminToken");
+
+  if (!adminToken) {
+    window.location.replace("admin-login.html");
+  }
+</script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #f3f6fb; color: #172033; }
+    header { background: #142d4e; color: white; padding: 22px 5%; }
+    header h1 { font-size: 25px; margin-bottom: 6px; }
+    header p { color: #dbeafe; font-size: 14px; }
+    main { max-width: 1500px; margin: 25px auto; padding: 0 18px 40px; }
+    .notice { padding: 14px; border-radius: 8px; background: #fff4d6; border: 1px solid #f2d28a; color: #704d00; line-height: 1.6; margin-bottom: 22px; font-size: 14px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat, .panel { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 3px 12px rgba(0,0,0,.05); }
+    .stat p { color: #64748b; font-size: 14px; margin-bottom: 10px; }
+    .stat h2 { font-size: 27px; }
+    .panel { margin-bottom: 24px; }
+    .panel h2 { font-size: 20px; margin-bottom: 16px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
+    button { border: none; border-radius: 7px; padding: 10px 15px; font-size: 13px; font-weight: bold; cursor: pointer; background: #2563eb; color: white; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .approve-btn { background: #15803d; }
+    input, select { width: 100%; padding: 11px; border: 1px solid #cbd5e1; border-radius: 7px; font-size: 14px; background: white; }
+    label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+    .fee-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: end; }
+    .fee-form button { width: 100%; min-height: 42px; }
+    .fee-info { margin-top: 15px; color: #64748b; font-size: 13px; line-height: 1.6; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1250px; }
+    th, td { padding: 13px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: top; font-size: 13px; }
+    th { background: #f8fafc; color: #475569; }
+    .status { display: inline-block; border-radius: 20px; padding: 5px 9px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+    .pending { background: #fef3c7; color: #92400e; }
+    .paid { background: #dcfce7; color: #166534; }
+    .approved { background: #dbeafe; color: #1d4ed8; }
+    .rejected { background: #fee2e2; color: #991b1b; }
+    .small { color: #64748b; font-size: 12px; line-height: 1.6; }
+    .message { padding: 13px; margin-bottom: 15px; border-radius: 7px; display: none; line-height: 1.5; }
+    .message.error { display: block; background: #fee2e2; color: #991b1b; }
+    .message.success { display: block; background: #dcfce7; color: #166534; }
+    .empty { text-align: center; padding: 30px; color: #64748b; }
+    .action-cell { min-width: 130px; }
+    .action-cell button { margin-bottom: 5px; }
+    @media (max-width: 600px) {
+      header h1 { font-size: 21px; }
+      .stat, .panel { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>CampusConnect 360</h1>
+  <p>Admin Dashboard — Student Applications & Fee Management</p>
+
+  <button
+    type="button"
+    onclick="adminLogout()"
+    style="margin-top: 15px; background: #dc2626;"
+  >
+    Logout
+  </button>
+</header>
+
+<main>
+
+  <div class="notice">
+    <strong>Admin workflow:</strong>
+    Applications can only be approved after successful payment verification.
+    Approval generates a unique student slip ID. PDF slip generation will be added separately.
+  </div>
+
+  <div id="message" class="message" role="alert"></div>
+
+  <section class="stats">
+    <div class="stat"><p>Total Applications</p><h2 id="totalCount">0</h2></div>
+    <div class="stat"><p>Pending Applications</p><h2 id="pendingCount">0</h2></div>
+    <div class="stat"><p>Payments Pending</p><h2 id="paymentPendingCount">0</h2></div>
+    <div class="stat"><p>Approved Applications</p><h2 id="approvedCount">0</h2></div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h2>Service Fee Management</h2>
+        <p class="small">Set or update the fee for each college service.</p>
+      </div>
+      <button type="button" id="refreshFeesButton" onclick="loadServiceFees()">Refresh Fees</button>
+    </div>
+
+    <form id="feeForm" class="fee-form">
+      <div>
+        <label for="feeService">Select Service</label>
+        <select id="feeService" required>
+          <option value="">Loading services...</option>
+        </select>
+      </div>
+      <div>
+        <label for="serviceFee">Service Fee (₹)</label>
+        <input type="number" id="serviceFee" min="0" max="9999999" step="0.01" placeholder="Enter service fee" required>
+      </div>
+      <div>
+        <button type="submit" id="updateFeeButton">Update Fee</button>
+      </div>
+    </form>
+    <p class="fee-info" id="currentFeeInfo">Select a service to view its current fee.</p>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h2>Student Applications</h2>
+        <p class="small">Review payment and approve eligible applications.</p>
+      </div>
+      <button id="refreshButton" onclick="loadApplications()">Refresh Applications</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Application ID</th>
+            <th>Student Details</th>
+            <th>Department</th>
+            <th>Service Details</th>
+            <th>Reason</th>
+            <th>Fee</th>
+            <th>Payment Status</th>
+            <th>Application Status</th>
+            <th>Slip ID</th>
+            <th>Admin Action</th>
+          </tr>
+        </thead>
+        <tbody id="applicationRows"></tbody>
+      </table>
+    </div>
+    <div id="emptyMessage" class="empty" hidden>No applications found.</div>
+  </section>
+
+</main>
+
+<script>
+const API_URL = "http://localhost:5000";
+let applications = [];
+let serviceFees = [];
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[char]));
+}
+
+function showMessage(message, type) {
+  const element = document.getElementById("message");
+  element.textContent = message;
+  element.className = "message " + type;
+}
+
+function money(amount) {
+  return "₹" + Number(amount || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function statusBadge(status) {
+  const value = String(status || "pending").toLowerCase();
+  let className = "pending";
+
+  if (value === "paid" || value === "verified") className = "paid";
+  if (value === "approved") className = "approved";
+  if (value === "rejected") className = "rejected";
+
+  return `<span class="status ${className}">${escapeHTML(value.charAt(0).toUpperCase() + value.slice(1))}</span>`;
+}
+
+// LOAD SERVICE FEES
+async function loadServiceFees() {
+  const button = document.getElementById("refreshFeesButton");
+  button.disabled = true;
+  button.textContent = "Loading...";
+
+  try {
+    const response = await fetch(`${API_URL}/api/service-fees`);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Could not load service fees.");
+    }
+
+    serviceFees = Array.isArray(result.services) ? result.services : [];
+    renderFeeOptions();
+  } catch (error) {
+    showMessage(error.message === "Failed to fetch" ? "Cannot connect to backend." : error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Refresh Fees";
+  }
+}
+
+function renderFeeOptions() {
+  const select = document.getElementById("feeService");
+  const previousValue = select.value;
+
+  select.innerHTML = '<option value="">Choose a Service</option>';
+
+  serviceFees.forEach(service => {
+    const option = document.createElement("option");
+    option.value = service.service_name;
+    option.textContent = service.service_name;
+    select.appendChild(option);
+  });
+
+  if (serviceFees.some(service => service.service_name === previousValue)) {
+    select.value = previousValue;
+  }
+
+  showCurrentFee();
+}
+
+function showCurrentFee() {
+  const selected = document.getElementById("feeService").value;
+  const service = serviceFees.find(item => item.service_name === selected);
+  const info = document.getElementById("currentFeeInfo");
+  const input = document.getElementById("serviceFee");
+
+  if (!service) {
+    info.textContent = "Select a service to view its current fee.";
+    input.value = "";
+    return;
+  }
+
+  info.textContent = `Current fee for ${service.service_name} is ${money(service.fee)}`;
+  input.value = service.fee;
+}
+
+document.getElementById("feeService").addEventListener("change", showCurrentFee);
+
+// UPDATE SERVICE FEE
+document.getElementById("feeForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const serviceName = document.getElementById("feeService").value;
+  const feeValue = document.getElementById("serviceFee").value;
+  const fee = Number(feeValue);
+
+  if (!serviceName || feeValue.trim() === "" || !Number.isFinite(fee) || fee < 0 || fee > 9999999) {
+    showMessage("Please select a service and enter a valid fee.", "error");
+    return;
+  }
+
+  const button = document.getElementById("updateFeeButton");
+  button.disabled = true;
+  button.textContent = "Updating...";
+
+  try {
+    const token = sessionStorage.getItem("adminToken");
+
+    const response = await fetch(`${API_URL}/api/admin/service-fees/${encodeURIComponent(serviceName)}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ fee })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Fee update failed.");
+    }
+
+    showMessage(`Fee updated successfully. New fee: ${money(result.service.fee)}`, "success");
+    await loadServiceFees();
+
+  } catch (error) {
+    showMessage(error.message === "Failed to fetch" ? "Cannot connect to backend." : error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Update Fee";
+  }
+});
+// LOAD APPLICATIONS
+async function loadApplications() {
+  const button = document.getElementById("refreshButton");
+  button.disabled = true;
+  button.textContent = "Loading...";
+
+  try {
+    const token = sessionStorage.getItem("adminToken");
+
+    if (!token) {
+      window.location.replace("admin-login.html");
+      return;
+    }
+
+    const response = await fetch(`${API_URL}/api/applications`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem("adminToken");
+      sessionStorage.removeItem("adminUsername");
+      window.location.replace("admin-login.html");
+      return;
+    }
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to fetch applications.");
+    }
+
+    applications = Array.isArray(result.applications)
+      ? result.applications
+      : [];
+
+    renderApplications();
+    renderStats();
+
+    showMessage("Applications loaded successfully.", "success");
+
+  } catch (error) {
+    showMessage(
+      error.message === "Failed to fetch"
+        ? "Backend connection failed. Check whether the server is running."
+        : error.message,
+      "error"
+    );
+
+  } finally {
+    button.disabled = false;
+    button.textContent = "Refresh Applications";
+  }
+}
+
+// =====================================
+// ADMIN APPROVAL
+// =====================================
+
+async function approveApplication(applicationId) {
+  const application = applications.find(
+    app => Number(app.id) === Number(applicationId)
+  );
+
+  if (!application) {
+    showMessage("Application not found in dashboard.", "error");
+    return;
+  }
+
+  if (String(application.payment_status).toLowerCase() !== "paid") {
+    showMessage("Payment must be completed before approval.", "error");
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to approve application #${applicationId}?`)) {
+    return;
+  }
+
+  const button = document.getElementById(`approve-${applicationId}`);
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Approving...";
+  }
+
+  try {
+    const token = sessionStorage.getItem("adminToken");
+
+    const response = await fetch(
+      `${API_URL}/api/admin/applications/${encodeURIComponent(applicationId)}/approve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Application approval failed.");
+    }
+
+    showMessage(
+      `Application approved! Slip ID: ${result.application.slip_id}`,
+      "success"
+    );
+
+    await loadApplications();
+
+  } catch (error) {
+    showMessage(
+      error.message === "Failed to fetch"
+        ? "Cannot connect to backend."
+        : error.message,
+      "error"
+    );
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Approve";
+    }
+  }
+}
+// DOWNLOAD APPROVED APPLICATION PDF
+async function downloadSlip(applicationId) {
+  try {
+    const token = sessionStorage.getItem("adminToken");
+
+const response = await fetch(
+  `${API_URL}/api/admin/applications/${encodeURIComponent(applicationId)}/slip`,
+  {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  }
+);
+
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(result.message || "PDF download failed.");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `CampusConnect_Slip_${applicationId}.pdf`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+
+    showMessage("PDF slip downloaded successfully!", "success");
+
+  } catch (error) {
+    showMessage(
+      error.message === "Failed to fetch"
+        ? "Cannot connect to backend."
+        : error.message,
+      "error"
+    );
+  }
+}
+// ADMIN LOGOUT
+function adminLogout() {
+  sessionStorage.removeItem("adminToken");
+  sessionStorage.removeItem("adminUsername");
+
+  window.location.replace("admin-login.html");
+}
+// STATISTICS
+function renderStats() {
+  document.getElementById("totalCount").textContent = applications.length;
+
+  document.getElementById("pendingCount").textContent =
+    applications.filter(app => String(app.application_status).toLowerCase() === "pending").length;
+
+  document.getElementById("paymentPendingCount").textContent =
+    applications.filter(app => String(app.payment_status).toLowerCase() === "pending").length;
+
+  document.getElementById("approvedCount").textContent =
+    applications.filter(app => String(app.application_status).toLowerCase() === "approved").length;
+}
+
+// APPLICATION TABLE
+function renderApplications() {
+  const tbody = document.getElementById("applicationRows");
+  const emptyMessage = document.getElementById("emptyMessage");
+
+  if (applications.length === 0) {
+    tbody.innerHTML = "";
+    emptyMessage.hidden = false;
+    return;
+  }
+
+  emptyMessage.hidden = true;
+
+  const subjectServices = [
+    "Backlog / Supplementary Exam",
+    "Revaluation Application",
+    "Answer Script Photocopy"
+  ];
+
+  const quantityServices = ["Record", "Observation", "Assignment"];
+
+  tbody.innerHTML = applications.map(app => {
+    let serviceDetails = `<strong>${escapeHTML(app.service_name)}</strong>`;
+
+    if (subjectServices.includes(app.service_name)) {
+      serviceDetails += `<br>Subjects: ${escapeHTML(app.subject_count ?? "-")}`;
+    }
+
+    if (quantityServices.includes(app.service_name)) {
+      serviceDetails += `<br>Quantity: ${escapeHTML(app.quantity ?? "-")}`;
+    }
+
+    const isPaid = String(app.payment_status).toLowerCase() === "paid";
+    const isPending = String(app.application_status).toLowerCase() === "pending";
+
+    let actionHTML = "-";
+
+    if (isPending && isPaid) {
+      actionHTML = `<button class="approve-btn" id="approve-${escapeHTML(app.id)}" onclick="approveApplication('${escapeHTML(app.id)}')">Approve</button>`;
+    } else if (isPending && !isPaid) {
+      actionHTML = `<button disabled title="Payment required before approval">Payment Pending</button>`;
+    } else if (String(app.application_status).toLowerCase() === "approved") {
+  actionHTML = `
+    <span class="small">Approved</span><br><br>
+    <button
+      type="button"
+      onclick="downloadSlip('${escapeHTML(app.id)}')">
+      Download PDF
+    </button>
+  `;
+}
+
+    return `
+      <tr>
+        <td><strong>#${escapeHTML(app.id)}</strong></td>
+        <td>
+          <strong>${escapeHTML(app.student_name)}</strong><br>
+          USN: ${escapeHTML(app.student_usn)}<br>
+          <span class="small">${escapeHTML(app.student_email)}</span>
+        </td>
+        <td>${escapeHTML(app.department || "-")}<br>Semester: ${escapeHTML(app.semester)}</td>
+        <td>${serviceDetails}</td>
+        <td>${escapeHTML(app.reason || "-")}</td>
+        <td><strong>${money(app.fee)}</strong></td>
+        <td>${statusBadge(app.payment_status)}</td>
+        <td>${statusBadge(app.application_status)}</td>
+        <td>${app.slip_id ? `<strong>${escapeHTML(app.slip_id)}</strong>` : "-"}</td>
+        <td class="action-cell">${actionHTML}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+// INITIAL LOAD
+loadServiceFees();
+loadApplications();
+</script>
+
+</body>
+</html>

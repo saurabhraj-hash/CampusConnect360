@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Registration | CampusConnect 360</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: #f1f5f9;
+    }
+
+    .register-container {
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      padding: 32px;
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 22px;
+      border: none;
+      border-radius: 7px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #message {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #475569;
+    }
+
+    .login-link a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="register-container">
+    <h1>CampusConnect 360</h1>
+    <p class="subtitle">Create Your Student Account</p>
+
+    <form id="registerForm">
+      <label for="student_name">Full Name</label>
+      <input type="text" id="student_name" required maxlength="150">
+
+      <label for="student_usn">USN</label>
+      <input type="text" id="student_usn" required maxlength="30">
+
+      <label for="student_email">Email Address</label>
+      <input type="email" id="student_email" required>
+
+      <label for="department">Department</label>
+      <select id="department" required>
+        <option value="">Select Department</option>
+        <option value="CSE">CSE</option>
+        <option value="ISE">ISE</option>
+        <option value="ECE">ECE</option>
+        <option value="EEE">EEE</option>
+        <option value="ME">ME</option>
+        <option value="CIVIL">CIVIL</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <label for="semester">Current Semester</label>
+      <select id="semester" required>
+        <option value="">Select Semester</option>
+        <option value="1">Semester 1</option>
+        <option value="2">Semester 2</option>
+        <option value="3">Semester 3</option>
+        <option value="4">Semester 4</option>
+        <option value="5">Semester 5</option>
+        <option value="6">Semester 6</option>
+        <option value="7">Semester 7</option>
+        <option value="8">Semester 8</option>
+      </select>
+
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        minlength="8"
+        required
+        autocomplete="new-password"
+      >
+
+      <label for="confirm_password">Confirm Password</label>
+      <input
+        type="password"
+        id="confirm_password"
+        minlength="8"
+        required
+        autocomplete="new-password"
+      >
+
+      <button type="submit" id="registerButton">
+        Create Account
+      </button>
+
+      <p id="message"></p>
+    </form>
+
+    <p class="login-link">
+      Already have an account?
+      <a href="student-login.html">Login here</a>
+    </p>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:5000";
+
+    const registerForm = document.getElementById("registerForm");
+    const registerButton = document.getElementById("registerButton");
+    const message = document.getElementById("message");
+
+    registerForm.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const student_name =
+        document.getElementById("student_name").value.trim();
+
+      const student_usn =
+        document.getElementById("student_usn").value.trim().toUpperCase();
+
+      const student_email =
+        document.getElementById("student_email").value.trim().toLowerCase();
+
+      const department =
+        document.getElementById("department").value;
+
+      const semester =
+        document.getElementById("semester").value;
+
+      const password =
+        document.getElementById("password").value;
+
+      const confirmPassword =
+        document.getElementById("confirm_password").value;
+
+      if (password !== confirmPassword) {
+        message.style.color = "red";
+        message.textContent = "Passwords do not match.";
+        return;
+      }
+
+      registerButton.disabled = true;
+      registerButton.textContent = "Creating Account...";
+      message.textContent = "";
+
+      try {
+        const response = await fetch(`${API_URL}/api/student/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            student_name,
+            student_usn,
+            student_email,
+            department,
+            semester: Number(semester),
+            password
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Registration failed.");
+        }
+
+        message.style.color = "green";
+        message.textContent =
+          "Registration successful! Redirecting to login...";
+
+        registerForm.reset();
+
+        setTimeout(() => {
+          window.location.href = "student-login.html";
+        }, 1500);
+
+      } catch (error) {
+        message.style.color = "red";
+        message.textContent = error.message;
+      } finally {
+        registerButton.disabled = false;
+        registerButton.textContent = "Create Account";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for Service | CampusConnect 360</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group[hidden] {
+      display: none !important;
+    }
+
+    .form-message {
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .form-message.success {
+      display: block;
+      color: #166534;
+      background: #dcfce7;
+    }
+
+    .form-message.error {
+      display: block;
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #paymentSection {
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      display: none;
+    }
+
+    #paymentSection.visible {
+      display: block;
+    }
+
+    #payButton {
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="brand">CampusConnect 360</div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="apply.html">Apply for Service</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="form-page">
+    <h1>Apply for a College Service</h1>
+    <p>Fill in your details and submit your application.</p>
+
+    <form id="applicationForm" class="application-form">
+      <div id="formMessage" class="form-message" role="alert"></div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="studentName">Student Name</label>
+          <input type="text" id="studentName" required
+            placeholder="Enter your full name">
+        </div>
+
+        <div class="form-group">
+          <label for="studentEmail">Student Email</label>
+          <input type="email" id="studentEmail" required
+            placeholder="Enter your email address">
+        </div>
+
+        <div class="form-group">
+          <label for="usn">USN</label>
+          <input type="text" id="usn" required
+            placeholder="Enter your USN">
+        </div>
+
+        <div class="form-group">
+          <label for="department">Department</label>
+          <select id="department" required>
+            <option value="">Select Department</option>
+            <option value="CSE">Computer Science and Engineering</option>
+            <option value="ISE">Information Science and Engineering</option>
+            <option value="ECE">Electronics and Communication Engineering</option>
+            <option value="EEE">Electrical and Electronics Engineering</option>
+            <option value="ME">Mechanical Engineering</option>
+            <option value="CIVIL">Civil Engineering</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="semester">Semester</label>
+          <select id="semester" required>
+            <option value="">Select Semester</option>
+            <option value="1">1st Semester</option>
+            <option value="2">2nd Semester</option>
+            <option value="3">3rd Semester</option>
+            <option value="4">4th Semester</option>
+            <option value="5">5th Semester</option>
+            <option value="6">6th Semester</option>
+            <option value="7">7th Semester</option>
+            <option value="8">8th Semester</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="service">Select Service</label>
+          <select id="service" required>
+            <option value="">Choose a Service</option>
+
+            <optgroup label="Academic Services">
+              <option value="Semester Registration">Semester Registration</option>
+              <option value="Backlog / Supplementary Exam">Backlog / Supplementary Exam</option>
+              <option value="Revaluation Application">Revaluation Application</option>
+              <option value="Answer Script Photocopy">Answer Script Photocopy</option>
+            </optgroup>
+
+            <optgroup label="General College Services">
+              <option value="Bonafide Certificate">Bonafide Certificate</option>
+              <option value="Fee Structure">Fee Structure</option>
+              <option value="Record">Record</option>
+              <option value="Observation">Observation</option>
+              <option value="Assignment">Assignment</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group full-width" id="subjectCountGroup" hidden>
+          <label for="subjectCount">Number of Subjects</label>
+          <input type="number" id="subjectCount" min="1" max="20"
+            placeholder="Enter number of subjects" disabled>
+        </div>
+
+        <div class="form-group full-width" id="quantityGroup" hidden>
+          <label for="quantity">Quantity</label>
+          <input type="number" id="quantity" min="1" max="100"
+            placeholder="Enter quantity" disabled>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="reason">Reason / Description</label>
+          <textarea id="reason" rows="4" required
+            placeholder="Enter reason or additional details"></textarea>
+        </div>
+
+      </div>
+
+      <button type="submit" id="submitButton" class="primary-btn">
+        Submit Application
+      </button>
+    </form>
+
+    <section id="paymentSection">
+      <h3>Application Submitted</h3>
+      <p id="applicationDetails"></p>
+      <p id="paymentStatus">Payment is pending.</p>
+      <button type="button" id="payButton" class="primary-btn">
+        Pay Now
+      </button>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 CampusConnect 360. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const API_URL = "http://localhost:5000";
+
+    // Use your Razorpay TEST Key ID here.
+    // Never put the Key Secret in frontend code.
+    const RAZORPAY_KEY_ID = "rzp_test_Tu6x4ap7ForYSm";
+
+    const form = document.getElementById("applicationForm");
+    const serviceInput = document.getElementById("service");
+
+    const subjectCountGroup = document.getElementById("subjectCountGroup");
+    const subjectCountInput = document.getElementById("subjectCount");
+
+    const quantityGroup = document.getElementById("quantityGroup");
+    const quantityInput = document.getElementById("quantity");
+
+    const formMessage = document.getElementById("formMessage");
+    const submitButton = document.getElementById("submitButton");
+
+    const paymentSection = document.getElementById("paymentSection");
+    const applicationDetails = document.getElementById("applicationDetails");
+    const paymentStatus = document.getElementById("paymentStatus");
+    const payButton = document.getElementById("payButton");
+
+    let currentApplicationId = null;
+    let paymentInProgress = false;
+
+    const subjectCountServices = [
+      "Backlog / Supplementary Exam",
+      "Revaluation Application",
+      "Answer Script Photocopy"
+    ];
+
+    const quantityServices = [
+      "Record",
+      "Observation",
+      "Assignment"
+    ];
+
+    function updateServiceFields() {
+      const selectedService = serviceInput.value;
+
+      const needsSubjectCount =
+        subjectCountServices.includes(selectedService);
+
+      subjectCountGroup.hidden = !needsSubjectCount;
+      subjectCountInput.disabled = !needsSubjectCount;
+      subjectCountInput.required = needsSubjectCount;
+
+      if (!needsSubjectCount) {
+        subjectCountInput.value = "";
+      }
+
+      const needsQuantity =
+        quantityServices.includes(selectedService);
+
+      quantityGroup.hidden = !needsQuantity;
+      quantityInput.disabled = !needsQuantity;
+      quantityInput.required = needsQuantity;
+
+      if (!needsQuantity) {
+        quantityInput.value = "";
+      }
+    }
+
+    function showMessage(message, type) {
+      formMessage.textContent = message;
+      formMessage.className = "form-message " + type;
+    }
+
+    serviceInput.addEventListener("change", updateServiceFields);
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      updateServiceFields();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const selectedService = serviceInput.value;
+
+      const needsSubjectCount =
+        subjectCountServices.includes(selectedService);
+
+      const needsQuantity =
+        quantityServices.includes(selectedService);
+
+      const subjectCount = needsSubjectCount
+        ? Number(subjectCountInput.value)
+        : null;
+
+      const quantity = needsQuantity
+        ? Number(quantityInput.value)
+        : null;
+
+      if (
+        needsSubjectCount &&
+        (!Number.isInteger(subjectCount) ||
+          subjectCount < 1 || subjectCount > 20)
+      ) {
+        showMessage("Enter a subject count between 1 and 20.", "error");
+        return;
+      }
+
+      if (
+        needsQuantity &&
+        (!Number.isInteger(quantity) ||
+          quantity < 1 || quantity > 100)
+      ) {
+        showMessage("Enter a quantity between 1 and 100.", "error");
+        return;
+      }
+
+      const application = {
+        semester: Number(document.getElementById("semester").value),
+        service_name: selectedService,
+        subject_count: subjectCount,
+        quantity: quantity,
+        reason: document.getElementById("reason").value.trim()
+      };
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+
+      paymentSection.classList.remove("visible");
+      currentApplicationId = null;
+      try {
+        const studentToken = sessionStorage.getItem("studentToken");
+
+        if (!studentToken) {
+          window.location.replace("student-login.html");
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/api/applications`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${studentToken}`
+          },
+          body: JSON.stringify(application)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.message || "Application submission failed."
+          );
+        }
+
+        currentApplicationId = result.application.id;
+
+        applicationDetails.textContent =
+          "Application ID: " + currentApplicationId +
+          " | Fee: ₹" + Number(result.application.fee).toFixed(2);
+
+        paymentStatus.textContent = "Payment is pending.";
+
+        paymentSection.classList.add("visible");
+
+        form.reset();
+        updateServiceFields();
+
+        showMessage(
+          "Application submitted successfully! Application ID: " +
+          currentApplicationId + ". Please complete your payment below.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error("Application submission error:", error);
+
+        showMessage(
+          error.message === "Failed to fetch"
+            ? "Cannot connect to backend. Please check whether the server is running."
+            : error.message,
+          "error"
+        );
+
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit Application";
+      }
+    });
+
+    // =====================================
+    // RAZORPAY PAYMENT
+    // =====================================
+
+    payButton.addEventListener("click", async function() {
+      if (!currentApplicationId || paymentInProgress) {
+        return;
+      }
+
+      const studentToken = sessionStorage.getItem("studentToken");
+
+      if (!studentToken) {
+        window.location.replace("student-login.html");
+        return;
+      }
+
+      if (typeof Razorpay === "undefined") {
+        showMessage(
+          "Razorpay Checkout could not load. Check your internet connection and reload the page.",
+          "error"
+        );
+        return;
+      }
+
+      paymentInProgress = true;
+      payButton.disabled = true;
+      payButton.textContent = "Preparing Payment...";
+
+      try {
+        // Create Razorpay order
+        const orderResponse = await fetch(
+          `${API_URL}/api/payment/create-order`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${studentToken}`
+            },
+            body: JSON.stringify({
+              application_id: currentApplicationId
+            })
+          }
+        );
+
+        const orderResult = await orderResponse.json();
+
+        if (!orderResponse.ok || !orderResult.success) {
+          throw new Error(
+            orderResult.message || "Could not create payment order."
+          );
+        }
+
+        const order = orderResult.order;
+
+        const options = {
+          key: RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: "CampusConnect 360",
+          description: "College Service Application",
+          order_id: order.id,
+
+          // Verify payment on backend
+          handler: async function(paymentResponse) {
+            paymentStatus.textContent =
+              "Payment received. Verifying with server...";
+
+            try {
+              const verifyResponse = await fetch(
+                `${API_URL}/api/payment/verify`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${studentToken}`
+                  },
+                  body: JSON.stringify({
+                    application_id: currentApplicationId,
+                    razorpay_order_id: paymentResponse.razorpay_order_id,
+                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                    razorpay_signature: paymentResponse.razorpay_signature
+                  })
+                }
+              );
+
+              const verifyResult = await verifyResponse.json();
+
+              if (!verifyResponse.ok || !verifyResult.success) {
+                throw new Error(
+                  verifyResult.message || "Payment verification failed."
+                );
+              }
+
+              paymentStatus.textContent =
+                "Payment successful and verified! Your application is awaiting admin approval.";
+
+              showMessage(
+                "Payment verified successfully for Application ID: " +
+                currentApplicationId,
+                "success"
+              );
+
+              payButton.style.display = "none";
+
+            } catch (error) {
+              console.error("Payment verification error:", error);
+
+              paymentStatus.textContent =
+                "Payment was received, but server verification could not be confirmed. Please contact the college administrator.";
+
+              showMessage(error.message, "error");
+
+            } finally {
+              paymentInProgress = false;
+              payButton.disabled = false;
+              payButton.textContent = "Pay Now";
+            }
+          },
+
+          modal: {
+            ondismiss: function() {
+              paymentStatus.textContent =
+                "Payment was not completed. Your application is still pending payment.";
+
+              paymentInProgress = false;
+              payButton.disabled = false;
+              payButton.textContent = "Pay Now";
+            }
+          },
+
+          theme: {
+            color: "#2563eb"
+          }
+        };
+
+        const checkout = new Razorpay(options);
+
+        checkout.on("payment.failed", function(response) {
+          console.error("Payment failed:", response.error);
+
+          paymentStatus.textContent =
+            "Payment failed. You can try again.";
+
+          showMessage(
+            response.error.description || "Payment failed. Please try again.",
+            "error"
+          );
+
+          paymentInProgress = false;
+          payButton.disabled = false;
+          payButton.textContent = "Pay Now";
+        });
+
+        checkout.open();
+
+      } catch (error) {
+        console.error("Payment order error:", error);
+
+        showMessage(error.message, "error");
+
+        paymentInProgress = false;
+        payButton.disabled = false;
+        payButton.textContent = "Pay Now";
+      }
+    });
+
+    updateServiceFields();
+  </script>
+</body>
+</html>
