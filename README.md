@@ -111,7 +111,19 @@ The main objective of CampusConnect 360 is to make college services more accessi
 **Saurabh Raj**
 
 GitHub: [saurabhraj-hash](https://github.com/saurabhraj-hash)
+## 📸 Project Screenshots
 
+### Screenshot 1
+![CampusConnect 360 Screenshot](screenshots/Screenshot%20of%20project.png)
+
+### Screenshot 2
+![CampusConnect 360 Screenshot](screenshots/Screenshot%20of%20project1.png)
+
+### Screenshot 3
+![CampusConnect 360 Screenshot](screenshots/Screenshotproject2.png)
+
+### Screenshot 4
+![CampusConnect 360 Screenshot](screenshots/Screenshotproject3.png)
 ---
 
 *CampusConnect 360 — Making College Services Smarter and Simpler.*
